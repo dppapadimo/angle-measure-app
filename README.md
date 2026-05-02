@@ -1,20 +1,22 @@
-# angle-measure-app
-Measures angle on a photo 
-# Angle Measure App 📐
+# 📐 Angle Measure Pro
 
-Mobile-friendly εφαρμογή για μέτρηση γωνίας πάνω σε εικόνα.
+Mobile-first εφαρμογή για μέτρηση γωνιών πάνω σε εικόνα.
 
 ## Features
 - Upload εικόνας
-- Pinch zoom & pan
-- 3 draggable σημεία
-- Υπολογισμός γωνίας (<180°)
-- Live update
+- Zoom + pan
+- Πολλαπλές γωνίες
+- Drag points
+- Live calculation
+- Labels A, B, C...
+- Export εικόνας με annotations
 
 ## Usage
 1. Upload εικόνα
 2. Tap 3 σημεία (2ο = κορυφή)
-3. Σύρε τα σημεία για ακρίβεια
+3. Σύρε για διόρθωση
+4. Save image
 
-## Deploy
-Μπορεί να ανέβει σε GitHub Pages.
+## Controls
+- Mouse wheel → zoom
+- Drag → pan
