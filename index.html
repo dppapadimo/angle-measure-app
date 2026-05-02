@@ -12,8 +12,14 @@
 
 <input type="file" id="upload">
 
-<div>
-  <button onclick="saveImage()">Save Image</button>
+<!-- 🔥 ZOOM BUTTONS (FIXED POSITION ON SCREEN) -->
+<div id="zoomControls">
+  <button onclick="zoomIn()">+</button>
+  <button onclick="zoomOut()">-</button>
+</div>
+
+<div class="buttons">
+  <button onclick="saveImage()">Save</button>
   <button onclick="resetAll()">Reset</button>
 </div>
 
