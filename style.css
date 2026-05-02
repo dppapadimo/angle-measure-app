@@ -11,12 +11,33 @@ canvas {
   touch-action: none;
 }
 
+/* 🔥 ZOOM BUTTONS FIXED POSITION */
+#zoomControls {
+  position: fixed;
+  right: 10px;
+  bottom: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 999;
+}
+
+#zoomControls button {
+  width: 55px;
+  height: 55px;
+  font-size: 26px;
+  border-radius: 10px;
+  border: none;
+  background: #222;
+  color: white;
+}
+
 .buttons {
   margin: 10px;
 }
 
 button {
-  font-size: 18px;
+  font-size: 16px;
   margin: 5px;
   padding: 8px 12px;
 }
