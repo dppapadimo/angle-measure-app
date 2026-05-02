@@ -1,39 +1,3 @@
-const canvas = new fabric.Canvas('canvas', {
-  selection: false
-});
-
-let angles = [];
-let currentPoints = [];
-let zoom = 1;
-
-// ---------------- IMAGE UPLOAD ----------------
-document.getElementById('upload').addEventListener('change', function (e) {
-  const reader = new FileReader();
-
-  reader.onload = function (f) {
-    fabric.Image.fromURL(f.target.result, function (img) {
-
-      canvas.clear();
-      angles = [];
-      currentPoints = [];
-      zoom = 1;
-
-      img.scaleToWidth(window.innerWidth);
-
-      canvas.setWidth(img.getScaledWidth());
-      canvas.setHeight(img.getScaledHeight());
-
-      canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
-    });
-  };
-
-  reader.readAsDataURL(e.target.files[0]);
-});
-
-// ---------------- POINTS ----------------
-canvas.on('mouse:down', function (opt) {
-
-  const p = canvas.getPointer(opt.e);
 
   const circle = new fabric.Circle({
     left: p.x,
