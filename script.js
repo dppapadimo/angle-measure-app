@@ -1,3 +1,41 @@
+const canvas = new fabric.Canvas('canvas', {
+  selection: false
+});
+
+let angles = [];
+let currentPoints = [];
+let zoom = 1;
+
+// ---------------- IMAGE ----------------
+document.getElementById('upload').addEventListener('change', function (e) {
+
+  const reader = new FileReader();
+
+  reader.onload = function (f) {
+
+    fabric.Image.fromURL(f.target.result, function (img) {
+
+      canvas.clear();
+      angles = [];
+      currentPoints = [];
+      zoom = 1;
+
+      img.scaleToWidth(window.innerWidth);
+
+      canvas.setWidth(img.getScaledWidth());
+      canvas.setHeight(img.getScaledHeight());
+
+      canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+    });
+  };
+
+  reader.readAsDataURL(e.target.files[0]);
+});
+
+// ---------------- ADD POINTS ----------------
+canvas.on('mouse:down', function (opt) {
+
+  const p = canvas.getPointer(opt.e);
 
   const circle = new fabric.Circle({
     left: p.x,
@@ -20,16 +58,13 @@
   }
 });
 
-// ---------------- CREATE ANGLE ----------------
+// ---------------- ANGLE ----------------
 function createAngle(points) {
 
   const index = angles.length;
   const label = String.fromCharCode(65 + index);
 
-  const angleObj = {
-    label,
-    points
-  };
+  const angleObj = { label, points };
 
   angles.push(angleObj);
   drawAngle(angleObj);
@@ -74,7 +109,7 @@ function drawAngle(a) {
   canvas.add(line1, line2, text);
 }
 
-// ---------------- UPDATE LIVE ----------------
+// ---------------- LIVE UPDATE ----------------
 function updateAllAngles() {
 
   angles.forEach(a => {
@@ -105,7 +140,7 @@ function updateAllAngles() {
   canvas.renderAll();
 }
 
-// ---------------- ANGLE MATH ----------------
+// ---------------- MATH ----------------
 function calculateAngle(A, B, C) {
 
   const BA = { x: A.left - B.left, y: A.top - B.top };
@@ -121,7 +156,7 @@ function calculateAngle(A, B, C) {
   return Math.acos(cos) * (180 / Math.PI);
 }
 
-// ---------------- SAVE IMAGE ----------------
+// ---------------- SAVE ----------------
 function saveImage() {
   const url = canvas.toDataURL({
     format: 'png',
@@ -141,7 +176,7 @@ function resetAll() {
   currentPoints = [];
 }
 
-// ---------------- ZOOM (+ / - ONLY) ----------------
+// ---------------- ZOOM FIXED ----------------
 function applyZoom() {
   canvas.setZoom(zoom);
   canvas.renderAll();
