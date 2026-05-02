@@ -19,14 +19,23 @@ document.getElementById('upload').addEventListener('change', function (e) {
       angles = [];
       currentPoints = [];
       zoom = 1;
+      
+      // fit image properly
+      const scale = window.innerWidth / img.width;
 
-      img.scaleToWidth(window.innerWidth);
+      canvas.setWidth(img.width * scale);
+      canvas.setHeight(img.height * scale);
 
-      canvas.setWidth(img.getScaledWidth());
-      canvas.setHeight(img.getScaledHeight());
+      img.set({
+         scaleX: scale,
+         scaleY: scale,
+         originX: 'left',
+         originY: 'top'
+  });
 
-      canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
-    });
+      canvas.setBackgroundImage(img, function () {
+      canvas.renderAll();
+  });
   };
 
   reader.readAsDataURL(e.target.files[0]);
