@@ -1,157 +1,205 @@
 const canvas = new fabric.Canvas('canvas', {
-    selection: false
+  selection: false
 });
 
-let imgInstance = null;
-let points = [];
-let lines = [];
+let angles = [];
+let currentPoints = [];
+let imgScale = 1;
 
+// -------------------- IMAGE UPLOAD --------------------
 document.getElementById('upload').addEventListener('change', function (e) {
-    const reader = new FileReader();
-    reader.onload = function (f) {
-        fabric.Image.fromURL(f.target.result, function (img) {
-            canvas.clear();
+  const reader = new FileReader();
 
-            imgInstance = img;
+  reader.onload = function (f) {
+    fabric.Image.fromURL(f.target.result, function (img) {
 
-            const scale = canvas.width / img.width;
+      canvas.clear();
+      angles = [];
+      currentPoints = [];
 
-            img.scaleToWidth(canvas.width);
-            canvas.setHeight(img.height * img.scaleX);
+      img.scaleToWidth(window.innerWidth);
 
-            canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+      canvas.setWidth(img.getScaledWidth());
+      canvas.setHeight(img.getScaledHeight());
 
-            resetPoints();
-        });
-    };
-    reader.readAsDataURL(e.target.files[0]);
+      canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+    });
+  };
+
+  reader.readAsDataURL(e.target.files[0]);
 });
 
-// ➤ Προσθήκη σημείων με tap
+// -------------------- CLICK TO ADD POINTS --------------------
 canvas.on('mouse:down', function (opt) {
-    if (points.length >= 3) return;
+  const p = canvas.getPointer(opt.e);
 
-    const pointer = canvas.getPointer(opt.e);
+  const circle = new fabric.Circle({
+    left: p.x,
+    top: p.y,
+    radius: 5,
+    fill: 'red',
+    originX: 'center',
+    originY: 'center',
+    hasControls: false,
+    selectable: true
+  });
 
-    const circle = new fabric.Circle({
-        left: pointer.x,
-        top: pointer.y,
-        radius: 6,
-        fill: 'red',
-        originX: 'center',
-        originY: 'center',
-        hasControls: false
+  circle.on('moving', updateAllAngles);
+
+  canvas.add(circle);
+  currentPoints.push(circle);
+
+  if (currentPoints.length === 3) {
+    createAngle(currentPoints);
+    currentPoints = [];
+  }
+});
+
+// -------------------- CREATE ANGLE --------------------
+function createAngle(points) {
+
+  const index = angles.length;
+  const label = String.fromCharCode(65 + index); // A, B, C...
+
+  const angleObj = {
+    label,
+    points
+  };
+
+  angles.push(angleObj);
+
+  drawAngle(angleObj);
+}
+
+// -------------------- DRAW ANGLE --------------------
+function drawAngle(a) {
+
+  const A = a.points[0];
+  const B = a.points[1];
+  const C = a.points[2];
+
+  const line1 = new fabric.Line([B.left, B.top, A.left, A.top], {
+    stroke: 'green',
+    strokeWidth: 2,
+    selectable: false
+  });
+
+  const line2 = new fabric.Line([B.left, B.top, C.left, C.top], {
+    stroke: 'green',
+    strokeWidth: 2,
+    selectable: false
+  });
+
+  const angle = calculateAngle(A, B, C);
+
+  const text = new fabric.Text(`${a.label}: ${angle.toFixed(1)}°`, {
+    left: B.left + 10,
+    top: B.top - 20,
+    fontSize: 16,
+    fill: 'blue',
+    selectable: false
+  });
+
+  a.line1 = line1;
+  a.line2 = line2;
+  a.text = text;
+
+  canvas.add(line1, line2, text);
+}
+
+// -------------------- UPDATE ALL ANGLES (drag) --------------------
+function updateAllAngles() {
+
+  angles.forEach(a => {
+
+    const A = a.points[0];
+    const B = a.points[1];
+    const C = a.points[2];
+
+    const angle = calculateAngle(A, B, C);
+
+    a.line1.set({
+      x1: B.left, y1: B.top,
+      x2: A.left, y2: A.top
     });
 
-    circle.on('moving', updateAngle);
+    a.line2.set({
+      x1: B.left, y1: B.top,
+      x2: C.left, y2: C.top
+    });
 
-    canvas.add(circle);
-    points.push(circle);
+    a.text.set({
+      left: B.left + 10,
+      top: B.top - 20,
+      text: `${a.label}: ${angle.toFixed(1)}°`
+    });
+  });
 
-    updateAngle();
-});
+  canvas.renderAll();
+}
 
-// ➤ Υπολογισμός γωνίας
+// -------------------- ANGLE MATH --------------------
 function calculateAngle(A, B, C) {
-    const BA = { x: A.x - B.x, y: A.y - B.y };
-    const BC = { x: C.x - B.x, y: C.y - B.y };
 
-    const dot = BA.x * BC.x + BA.y * BC.y;
-    const magBA = Math.sqrt(BA.x ** 2 + BA.y ** 2);
-    const magBC = Math.sqrt(BC.x ** 2 + BC.y ** 2);
+  const BA = { x: A.left - B.left, y: A.top - B.top };
+  const BC = { x: C.left - B.left, y: C.top - B.top };
 
-    let cos = dot / (magBA * magBC);
+  const dot = BA.x * BC.x + BA.y * BC.y;
+  const magBA = Math.hypot(BA.x, BA.y);
+  const magBC = Math.hypot(BC.x, BC.y);
 
-    cos = Math.min(1, Math.max(-1, cos)); // fix precision
+  let cos = dot / (magBA * magBC);
+  cos = Math.max(-1, Math.min(1, cos));
 
-    const angle = Math.acos(cos);
-    return angle * (180 / Math.PI);
+  return Math.acos(cos) * (180 / Math.PI);
 }
 
-// ➤ redraw
-function updateAngle() {
-    lines.forEach(l => canvas.remove(l));
-    lines = [];
+// -------------------- SAVE IMAGE --------------------
+function saveImage() {
+  const url = canvas.toDataURL({
+    format: 'png',
+    quality: 1
+  });
 
-    if (points.length === 3) {
-        const A = points[0];
-        const B = points[1];
-        const C = points[2];
-
-        const line1 = new fabric.Line([B.left, B.top, A.left, A.top], {
-            stroke: 'green',
-            strokeWidth: 3
-        });
-
-        const line2 = new fabric.Line([B.left, B.top, C.left, C.top], {
-            stroke: 'green',
-            strokeWidth: 3
-        });
-
-        canvas.add(line1, line2);
-        lines.push(line1, line2);
-
-        const angle = calculateAngle(
-            { x: A.left, y: A.top },
-            { x: B.left, y: B.top },
-            { x: C.left, y: C.top }
-        );
-
-        document.getElementById("angleDisplay").innerText =
-            "Γωνία: " + angle.toFixed(2) + "°";
-    }
-
-    canvas.renderAll();
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'angles.png';
+  link.click();
 }
 
-// ➤ Reset
-function resetPoints() {
-    points.forEach(p => canvas.remove(p));
-    lines.forEach(l => canvas.remove(l));
-
-    points = [];
-    lines = [];
-
-    document.getElementById("angleDisplay").innerText = "Γωνία: -";
-    canvas.renderAll();
+// -------------------- RESET --------------------
+function resetAll() {
+  canvas.clear();
+  angles = [];
+  currentPoints = [];
 }
 
-// ➤ Pinch Zoom + Pan
+// -------------------- ZOOM + PAN --------------------
 let zoom = 1;
 
 canvas.on('mouse:wheel', function (opt) {
-    let delta = opt.e.deltaY;
-    zoom *= 0.999 ** delta;
+  let delta = opt.e.deltaY;
+  zoom *= 0.999 ** delta;
 
-    if (zoom > 5) zoom = 5;
-    if (zoom < 0.5) zoom = 0.5;
+  zoom = Math.min(5, Math.max(0.5, zoom));
 
-    canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+  canvas.zoomToPoint(
+    { x: opt.e.offsetX, y: opt.e.offsetY },
+    zoom
+  );
 
-    opt.e.preventDefault();
-    opt.e.stopPropagation();
+  opt.e.preventDefault();
 });
 
-// ➤ Drag canvas (pan)
-let isDragging = false;
+// PAN
+let isDown = false;
 
-canvas.on('mouse:down', function (opt) {
-    if (opt.e.touches && opt.e.touches.length === 2) return;
-
-    isDragging = true;
-    canvas.selection = false;
-});
+canvas.on('mouse:down', () => isDown = true);
+canvas.on('mouse:up', () => isDown = false);
 
 canvas.on('mouse:move', function (opt) {
-    if (isDragging) {
-        const e = opt.e;
-        canvas.relativePan({
-            x: e.movementX,
-            y: e.movementY
-        });
-    }
-});
-
-canvas.on('mouse:up', function () {
-    isDragging = false;
+  if (isDown) {
+    const e = opt.e;
+    canvas.relativePan({ x: e.movementX, y: e.movementY });
+  }
 });
