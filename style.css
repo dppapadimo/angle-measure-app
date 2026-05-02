@@ -1,17 +1,17 @@
 body {
-  text-align: center;
   font-family: Arial;
+  text-align: center;
   margin: 0;
   padding: 10px;
 }
 
 canvas {
   border: 1px solid #ccc;
-  touch-action: none;
   max-width: 100%;
+  touch-action: none;
 }
 
-#angleDisplay {
-  font-size: 22px;
-  margin: 10px;
+button {
+  margin: 5px;
+  padding: 8px 12px;
 }
