@@ -1,0 +1,17 @@
+body {
+  text-align: center;
+  font-family: Arial;
+  margin: 0;
+  padding: 10px;
+}
+
+canvas {
+  border: 1px solid #ccc;
+  touch-action: none;
+  max-width: 100%;
+}
+
+#angleDisplay {
+  font-size: 22px;
+  margin: 10px;
+}
