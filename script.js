@@ -4,9 +4,9 @@ const canvas = new fabric.Canvas('canvas', {
 
 let angles = [];
 let currentPoints = [];
-let imgScale = 1;
+let zoom = 1;
 
-// -------------------- IMAGE UPLOAD --------------------
+// ---------------- IMAGE UPLOAD ----------------
 document.getElementById('upload').addEventListener('change', function (e) {
   const reader = new FileReader();
 
@@ -16,6 +16,7 @@ document.getElementById('upload').addEventListener('change', function (e) {
       canvas.clear();
       angles = [];
       currentPoints = [];
+      zoom = 1;
 
       img.scaleToWidth(window.innerWidth);
 
@@ -29,8 +30,9 @@ document.getElementById('upload').addEventListener('change', function (e) {
   reader.readAsDataURL(e.target.files[0]);
 });
 
-// -------------------- CLICK TO ADD POINTS --------------------
+// ---------------- POINTS ----------------
 canvas.on('mouse:down', function (opt) {
+
   const p = canvas.getPointer(opt.e);
 
   const circle = new fabric.Circle({
@@ -40,7 +42,6 @@ canvas.on('mouse:down', function (opt) {
     fill: 'red',
     originX: 'center',
     originY: 'center',
-    hasControls: false,
     selectable: true
   });
 
@@ -55,11 +56,11 @@ canvas.on('mouse:down', function (opt) {
   }
 });
 
-// -------------------- CREATE ANGLE --------------------
+// ---------------- CREATE ANGLE ----------------
 function createAngle(points) {
 
   const index = angles.length;
-  const label = String.fromCharCode(65 + index); // A, B, C...
+  const label = String.fromCharCode(65 + index);
 
   const angleObj = {
     label,
@@ -67,11 +68,10 @@ function createAngle(points) {
   };
 
   angles.push(angleObj);
-
   drawAngle(angleObj);
 }
 
-// -------------------- DRAW ANGLE --------------------
+// ---------------- DRAW ----------------
 function drawAngle(a) {
 
   const A = a.points[0];
@@ -92,13 +92,16 @@ function drawAngle(a) {
 
   const angle = calculateAngle(A, B, C);
 
-  const text = new fabric.Text(`${a.label}: ${angle.toFixed(1)}°`, {
-    left: B.left + 10,
-    top: B.top - 20,
-    fontSize: 16,
-    fill: 'blue',
-    selectable: false
-  });
+  const text = new fabric.Text(
+    `${a.label}: ${angle.toFixed(1)}°`,
+    {
+      left: B.left + 10,
+      top: B.top - 20,
+      fontSize: 16,
+      fill: 'blue',
+      selectable: false
+    }
+  );
 
   a.line1 = line1;
   a.line2 = line2;
@@ -107,7 +110,7 @@ function drawAngle(a) {
   canvas.add(line1, line2, text);
 }
 
-// -------------------- UPDATE ALL ANGLES (drag) --------------------
+// ---------------- UPDATE LIVE ----------------
 function updateAllAngles() {
 
   angles.forEach(a => {
@@ -138,7 +141,7 @@ function updateAllAngles() {
   canvas.renderAll();
 }
 
-// -------------------- ANGLE MATH --------------------
+// ---------------- ANGLE MATH ----------------
 function calculateAngle(A, B, C) {
 
   const BA = { x: A.left - B.left, y: A.top - B.top };
@@ -154,7 +157,7 @@ function calculateAngle(A, B, C) {
   return Math.acos(cos) * (180 / Math.PI);
 }
 
-// -------------------- SAVE IMAGE --------------------
+// ---------------- SAVE IMAGE ----------------
 function saveImage() {
   const url = canvas.toDataURL({
     format: 'png',
@@ -167,39 +170,27 @@ function saveImage() {
   link.click();
 }
 
-// -------------------- RESET --------------------
+// ---------------- RESET ----------------
 function resetAll() {
   canvas.clear();
   angles = [];
   currentPoints = [];
 }
 
-// -------------------- ZOOM + PAN --------------------
-let zoom = 1;
+// ---------------- ZOOM (+ / - ONLY) ----------------
+function applyZoom() {
+  canvas.setZoom(zoom);
+  canvas.renderAll();
+}
 
-canvas.on('mouse:wheel', function (opt) {
-  let delta = opt.e.deltaY;
-  zoom *= 0.999 ** delta;
+function zoomIn() {
+  zoom += 0.1;
+  if (zoom > 5) zoom = 5;
+  applyZoom();
+}
 
-  zoom = Math.min(5, Math.max(0.5, zoom));
-
-  canvas.zoomToPoint(
-    { x: opt.e.offsetX, y: opt.e.offsetY },
-    zoom
-  );
-
-  opt.e.preventDefault();
-});
-
-// PAN
-let isDown = false;
-
-canvas.on('mouse:down', () => isDown = true);
-canvas.on('mouse:up', () => isDown = false);
-
-canvas.on('mouse:move', function (opt) {
-  if (isDown) {
-    const e = opt.e;
-    canvas.relativePan({ x: e.movementX, y: e.movementY });
-  }
-});
+function zoomOut() {
+  zoom -= 0.1;
+  if (zoom < 0.5) zoom = 0.5;
+  applyZoom();
+}
