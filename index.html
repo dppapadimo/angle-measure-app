@@ -3,29 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Angle Measure Pro</title>
+  <title>Angle Measure Pro v3</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h2>Angle Measure Pro</h2>
+<h2>Angle Measure Pro v3</h2>
 
 <input type="file" id="upload">
 
-<!-- 🔥 ZOOM BUTTONS (FIXED POSITION ON SCREEN) -->
-<div id="zoomControls">
+<div class="toolbar">
   <button onclick="zoomIn()">+</button>
   <button onclick="zoomOut()">-</button>
-</div>
-
-<div class="buttons">
+  <button onclick="undo()">Undo</button>
+  <button onclick="toggleGrid()">Grid</button>
   <button onclick="saveImage()">Save</button>
   <button onclick="resetAll()">Reset</button>
 </div>
 
 <canvas id="canvas"></canvas>
 
-<p id="info">Tap 3 points per angle</p>
+<p>Tap 3 points → angle</p>
 
 <script src="https://cdn.jsdelivr.net/npm/fabric@5.3.0/dist/fabric.min.js"></script>
 <script src="script.js"></script>
